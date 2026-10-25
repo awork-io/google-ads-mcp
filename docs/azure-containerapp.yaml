@@ -1,0 +1,51 @@
+name: google-ads-mcp
+location: Germany West Central
+type: Microsoft.App/containerApps
+identity:
+  type: UserAssigned
+  userAssignedIdentities:
+    /subscriptions/f337ef60-cbc1-4fd0-9638-26284a20a205/resourceGroups/awork-global/providers/Microsoft.ManagedIdentity/userAssignedIdentities/google-ads-mcp: {}
+properties:
+  environmentId: /subscriptions/f337ef60-cbc1-4fd0-9638-26284a20a205/resourceGroups/awork-global/providers/Microsoft.App/managedEnvironments/awork-mcp-vnet-v3
+  configuration:
+    activeRevisionsMode: Single
+    ingress:
+      external: true
+      allowInsecure: false
+      targetPort: 8080
+      transport: auto
+    registries:
+      - server: awork.azurecr.io
+        identity: /subscriptions/f337ef60-cbc1-4fd0-9638-26284a20a205/resourceGroups/awork-global/providers/Microsoft.ManagedIdentity/userAssignedIdentities/google-ads-mcp
+  template:
+    containers:
+      - name: google-ads-mcp
+        image: awork.azurecr.io/integrations/google-ads-mcp@sha256:6df1092fb9e2ada99ba5eb7811452944f4fe863e4d7c9935bc87c574bf4c9ed2
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+        env:
+          - name: GOOGLE_ADS_MCP_EXTERNAL_OAUTH
+            value: "true"
+          - name: GOOGLE_ADS_MCP_BASE_URL
+            value: https://google-ads-mcp.awork.com
+          - name: PORT
+            value: "8080"
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          - type: Readiness
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+    scale:
+      minReplicas: 1
+      maxReplicas: 3

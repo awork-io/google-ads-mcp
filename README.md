@@ -31,7 +31,7 @@ requests are rejected. A missing token never falls back to the server's Google
 credentials. Do not set a shared `GOOGLE_ADS_LOGIN_CUSTOMER_ID`; callers can pass
 their manager account ID to tools that support it.
 
-See [Azure hosting and activation](deploy/README.md). The upstream modes and
+See [Azure hosting and activation](docs/awork-hosting.md). The upstream modes and
 instructions below remain available when external OAuth is disabled.
 
 This repo contains the source code for running an

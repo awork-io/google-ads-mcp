@@ -29,6 +29,8 @@ properties:
             value: "true"
           - name: GOOGLE_ADS_MCP_BASE_URL
             value: https://google-ads-mcp.awork.com
+          - name: GOOGLE_ADS_MCP_OAUTH_CLIENT_ID
+            value: 561151912625-l1ib2oqham63cesq0v0dpdkah9364s4j.apps.googleusercontent.com
           - name: PORT
             value: "8080"
         probes:

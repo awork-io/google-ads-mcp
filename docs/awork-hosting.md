@@ -27,8 +27,9 @@ MCP route or rule set was changed.
 
 The [Container App manifest](azure-containerapp.yaml) records the deployed image
 digest and configuration. The current build is ACR run `dn55`, from source
-commit `dbd7661`. No Google credentials are configured yet. Health and discovery
-work, but all MCP requests fail closed until the public OAuth client ID is set.
+commit `dbd7661`. The server allows the existing production Google Workspace
+OAuth client ID. No client secret or user tokens are stored on the server.
+Without a public OAuth client ID, all MCP requests fail closed.
 
 ## Update the server
 
@@ -49,23 +50,24 @@ Update the manifest to the returned digest and deploy it:
 az containerapp update -g awork-global -n google-ads-mcp --yaml docs/azure-containerapp.yaml
 ```
 
-Once the public client ID is configured, preserve its environment entry in the
-manifest on future deployments. Never add the client secret to this manifest.
+Preserve the public client ID in the manifest on future deployments. Never add
+the client secret to this manifest.
 
-## Activate Google OAuth later
+## Google OAuth and public release
 
-1. Create the Google OAuth web app and confirm Google Ads API access for its
-   Google Cloud project. Register awork's callback:
+1. Reuse the production Google Workspace OAuth web app and confirm Google Ads
+   API access for its Google Cloud project. Keep awork's callback:
    `https://app.awork.com/api/v1/agents/connectors/auth/callback`.
 2. Configure the consent screen for `openid`, `email`, `profile`, and
    `https://www.googleapis.com/auth/adwords`. Allow the intended audience.
-3. Set `GOOGLE_ADS_MCP_OAUTH_CLIENT_ID` on the Container App to the public client
-   ID. The server accepts only Google access tokens issued to this app. It does
-   not need a Google client secret, refresh token, storage volume, or signing key.
-4. In awork's backend secret configuration, set `GoogleAdsMCPClientIdProduction`
-   and `GoogleAdsMCPClientSecretProduction`; develop uses the corresponding
-   `Develop` names. The shared endpoint expects the same OAuth app ID in both
-   environments. Use a separate deployment if a different OAuth app is required.
+3. `GOOGLE_ADS_MCP_OAUTH_CLIENT_ID` is set on the Container App to the production
+   app's public client ID. The server accepts only tokens issued to this app.
+   It does not need a client secret, refresh token, storage volume, or signing key.
+4. awork's production connector configuration reuses the existing public client
+   ID and `GoogleMCPClientSecretProduction` reference. Deploy that configuration
+   with the preset. Develop still has pending `GoogleAdsMCPClientIdDevelop` and
+   `GoogleAdsMCPClientSecretDevelop` references. The shared endpoint expects the
+   production OAuth app ID. Use a separate deployment for a different app ID.
 5. Enable the `google-ads` preset in awork and deploy the connector/config changes.
 6. Test sign-in through connector setup, tool discovery, an account read for
    each of two users, refresh, reconnect, and a container revision/restart.
@@ -81,7 +83,10 @@ but the official MCP tools exposed by this fork are read-only.
 On 25 October 2026, the public hostname passed health and protected-resource
 discovery checks. MCP initialize returned 401 for missing and dummy tokens, with
 the correct metadata challenge and no session ID. Local OAuth routes returned
-404. Revision `google-ads-mcp--0000001` is healthy and serves all traffic.
+404. Revision `google-ads-mcp--0000002` now serves all traffic and registers the
+production OAuth client ID. Before this configuration change, token validation
+rejected every request before contacting Google. Health and invalid-token checks
+still pass after the change.
 The Python 3.12 suite ran 74 tests (three optional storage tests skipped), both
 smoke tests passed, and formatting passed.
 
@@ -89,5 +94,5 @@ The HTTP tests mock only Google token validation and Google Ads responses. They
 exercise discovery, missing/invalid/expired/wrong-app/missing-scope tokens,
 parallel users, replacement access tokens, and missing-token rejection after
 initialize. They also prove that no session ID is created and server credentials
-are never used in external mode. Full Google sign-in and refresh need the real
-OAuth app and an authorized account.
+are never used in external mode. Full Google sign-in, account reads, and refresh
+still need live validation with an authorized account.

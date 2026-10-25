@@ -25,9 +25,9 @@ Container App hostname as the origin Host header. Caching is disabled. The
 existing wildcard DNS resolves the public hostname to Front Door. No existing
 MCP route or rule set was changed.
 
-The [Container App manifest](azure-containerapp.yaml) records the initial image
-digest and configuration. The initial build was ACR run `dn54`, from source
-commit `9c13dfd`. No Google credentials are configured yet. Health and discovery
+The [Container App manifest](azure-containerapp.yaml) records the deployed image
+digest and configuration. The current build is ACR run `dn55`, from source
+commit `dbd7661`. No Google credentials are configured yet. Health and discovery
 work, but all MCP requests fail closed until the public OAuth client ID is set.
 
 ## Update the server
@@ -77,6 +77,13 @@ Google Ads client for that request. The Google Ads `adwords` scope is broad,
 but the official MCP tools exposed by this fork are read-only.
 
 ## Verification
+
+On 25 October 2026, the public hostname passed health and protected-resource
+discovery checks. MCP initialize returned 401 for missing and dummy tokens, with
+the correct metadata challenge and no session ID. Local OAuth routes returned
+404. Revision `google-ads-mcp--0000001` is healthy and serves all traffic.
+The Python 3.12 suite ran 74 tests (three optional storage tests skipped), both
+smoke tests passed, and formatting passed.
 
 The HTTP tests mock only Google token validation and Google Ads responses. They
 exercise discovery, missing/invalid/expired/wrong-app/missing-scope tokens,

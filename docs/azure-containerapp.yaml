@@ -20,7 +20,7 @@ properties:
   template:
     containers:
       - name: google-ads-mcp
-        image: awork.azurecr.io/integrations/google-ads-mcp@sha256:6df1092fb9e2ada99ba5eb7811452944f4fe863e4d7c9935bc87c574bf4c9ed2
+        image: awork.azurecr.io/integrations/google-ads-mcp@sha256:eb4c435ce68f11eb24036929538a285e9d90acb50c0e5c9ffe4e25b11a735054
         resources:
           cpu: 0.5
           memory: 1Gi

@@ -22,7 +22,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-uv.lock
+.venv/
 MANIFEST
 
 # Unit test / coverage reports

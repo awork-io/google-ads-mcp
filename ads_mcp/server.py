@@ -17,6 +17,8 @@
 import os
 
 from ads_mcp.coordinator import mcp
+from ads_mcp.external_auth import uses_external_oauth
+from starlette.responses import JSONResponse
 
 # The following imports are necessary to register the resources with the `mcp`
 # object, even though they are not directly used in this file.
@@ -31,12 +33,27 @@ from ads_mcp.resources import (
 )  # noqa: F401
 
 
+@mcp.custom_route("/healthz", methods=["GET"])
+async def health(_request):
+    """Check the process without Google credentials or an upstream request."""
+    return JSONResponse({"status": "ok"})
+
+
 def run_server() -> None:
     _CLIENT_ID = os.environ.get("GOOGLE_ADS_MCP_OAUTH_CLIENT_ID")
     _CLIENT_SECRET = os.environ.get("GOOGLE_ADS_MCP_OAUTH_CLIENT_SECRET")
     port = int(os.environ.get("PORT", "8080"))
 
-    if _CLIENT_ID and _CLIENT_SECRET:
+    if uses_external_oauth():
+        mcp.run(
+            transport="streamable-http",
+            port=port,
+            host="0.0.0.0",
+            stateless_http=True,
+            json_response=True,
+            uvicorn_config={"access_log": False},
+        )
+    elif _CLIENT_ID and _CLIENT_SECRET:
         mcp.run(
             transport="streamable-http",
             port=port,

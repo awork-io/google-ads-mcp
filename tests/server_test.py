@@ -52,6 +52,24 @@ class TestUtils(unittest.TestCase):
             uvicorn_config={"access_log": False},
         )
 
+    def test_external_oauth_uses_stateless_http_without_client_secret(self):
+        """awork supplies credentials on every request and owns token refresh."""
+        from ads_mcp import server
+
+        env = {"GOOGLE_ADS_MCP_EXTERNAL_OAUTH": "true", "PORT": "18080"}
+        with patch.dict(server.os.environ, env, clear=True):
+            with patch.object(server.mcp, "run") as run:
+                server.run_server()
+
+        run.assert_called_once_with(
+            transport="streamable-http",
+            port=18080,
+            host="0.0.0.0",
+            stateless_http=True,
+            json_response=True,
+            uvicorn_config={"access_log": False},
+        )
+
     def test_oauth_access_token_not_logged(self):
         """Tests that OAuth access token is not logged."""
         import asyncio

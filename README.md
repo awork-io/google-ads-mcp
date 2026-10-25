@@ -1,5 +1,39 @@
 # Google Ads MCP Server
 
+## awork deployment
+
+This fork adds a stateless HTTP mode. awork owns Google OAuth, encrypted user
+tokens, and refresh. This server receives a Google access token in the
+`Authorization: Bearer ...` header on every request. It validates the token's
+OAuth client ID, Ads scope, and expiry before using it for Google Ads calls.
+It does not issue tokens, store credentials, or create OAuth sessions in this mode.
+Google's tools remain read-only; the `adwords` OAuth scope itself is broader.
+
+```sh
+GOOGLE_ADS_MCP_EXTERNAL_OAUTH=true \
+GOOGLE_ADS_MCP_BASE_URL=https://google-ads-mcp.awork.com \
+GOOGLE_ADS_MCP_OAUTH_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID \
+uv run google-ads-mcp
+```
+
+The listener uses port 8080 (override with `PORT`). `GET /healthz` checks the
+process without calling Google. `/mcp` uses stateless Streamable HTTP and JSON
+responses. OAuth resource metadata is available at
+`/.well-known/oauth-protected-resource/mcp` and points directly to
+`https://accounts.google.com`. There are no local authorize, token, registration,
+or callback endpoints in this mode. The client must use a pre-registered Google
+OAuth app; Google does not support dynamic registration.
+
+The server needs only the public client ID. Keep the client secret and each
+user's refresh token in awork. No storage volume, Redis, or signing key is needed.
+If the client ID is absent, the process and discovery still work, but all MCP
+requests are rejected. A missing token never falls back to the server's Google
+credentials. Do not set a shared `GOOGLE_ADS_LOGIN_CUSTOMER_ID`; callers can pass
+their manager account ID to tools that support it.
+
+See [Azure hosting and activation](deploy/README.md). The upstream modes and
+instructions below remain available when external OAuth is disabled.
+
 This repo contains the source code for running an
 [MCP](https://modelcontextprotocol.io) server that interacts with the
 [Google Ads API](https://developers.google.com/google-ads/api).

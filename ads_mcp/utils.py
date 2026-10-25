@@ -78,6 +78,13 @@ def _create_credentials() -> google.auth.credentials.Credentials:
         # Create credentials using the access token provided by FastMCP
         return Credentials(token=token_obj.token)
 
+    from ads_mcp.external_auth import uses_external_oauth
+
+    if uses_external_oauth():
+        from fastmcp.exceptions import ToolError
+
+        raise ToolError("A valid Google OAuth access token is required.")
+
     with prevent_stdio_inheritance():
         credentials, _ = google.auth.default(scopes=[_ADS_SCOPE])
     return credentials

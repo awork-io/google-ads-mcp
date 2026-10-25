@@ -56,6 +56,7 @@ jobs:
         run: nox -s smoke_tests
 
   llm-tests:
+    if: github.repository == 'googleads/google-ads-mcp'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

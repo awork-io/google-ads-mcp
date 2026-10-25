@@ -107,7 +107,7 @@ def _search_tool_description() -> str:
         utils.logger.error("The specified file was not found.")
 
     return f"""
-{search.__doc__}
+Fetches data from the Google Ads API using the search method
 
 ### Hints
     Language Grammar can be found at https://developers.google.com/google-ads/api/docs/query/grammar
@@ -142,11 +142,11 @@ def _search_tool_description() -> str:
 """
 
 
-# The `search` tool requires a more complex description that's generated at
-# runtime. Uses the `add_tool` method instead of an annnotation since `add_tool`
-# provides the flexibility needed to generate the description while also
-# including the `search` method's docstring.
-search.__doc__ = _search_tool_description()
+# Keep the function docstring intact so FastMCP can parse argument descriptions.
 search_mcp.add_tool(
-    Tool.from_function(search, annotations=ToolAnnotations(readOnlyHint=True))
+    Tool.from_function(
+        search,
+        description=_search_tool_description(),
+        annotations=ToolAnnotations(readOnlyHint=True),
+    )
 )
